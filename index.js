@@ -2,7 +2,8 @@ const express = require('express');
 require('dotenv').config();
 const cors = require('cors');
 const app = express();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const { ObjectID } = require('bson');
 const port = process.env.PORT || 5000;
 
 app.use(cors());
@@ -23,6 +24,13 @@ async function run() {
             const cursor = toolsCollection.find(query);
             const tools = await cursor.toArray();
             res.send(tools);
+        });
+        //load single tools get api
+        app.get('/tools/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectID(id) };
+            const tools = await toolsCollection.findOne(query);
+            res.send(tools);
         })
     }
     finally {
@@ -38,5 +46,5 @@ app.get('/', (req, res) => {
 })
 
 app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`)
+    console.log(`listening on port ${port}`)
 })
