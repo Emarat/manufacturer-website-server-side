@@ -15,7 +15,15 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 async function run() {
     try {
         await client.connect();
-        console.log("connected");
+        const toolsCollection = client.db('emarat_manufacturer').collection('tools');
+
+        // tools get api
+        app.get('/tools', async (req, res) => {
+            const query = {};
+            const cursor = toolsCollection.find(query);
+            const tools = await cursor.toArray();
+            res.send(tools);
+        })
     }
     finally {
 
