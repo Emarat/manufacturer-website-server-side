@@ -17,6 +17,7 @@ async function run() {
     try {
         await client.connect();
         const toolsCollection = client.db('emarat_manufacturer').collection('tools');
+        const reviewsCollection = client.db('emarat_manufacturer').collection('reviews');
 
         // tools get api
         app.get('/tools', async (req, res) => {
@@ -31,7 +32,15 @@ async function run() {
             const query = { _id: ObjectID(id) };
             const tools = await toolsCollection.findOne(query);
             res.send(tools);
-        })
+        });
+
+        // reviews get api
+        app.get('/reviews', async (req, res) => {
+            const query = {};
+            const cursor = reviewsCollection.find(query);
+            const reviews = await cursor.toArray();
+            res.send(reviews);
+        });
     }
     finally {
 
