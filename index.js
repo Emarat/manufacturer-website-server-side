@@ -18,6 +18,7 @@ async function run() {
         await client.connect();
         const toolsCollection = client.db('emarat_manufacturer').collection('tools');
         const reviewsCollection = client.db('emarat_manufacturer').collection('reviews');
+        const userCollection = client.db('emarat_manufacturer').collection('users');
 
         // tools get api
         app.get('/tools', async (req, res) => {
@@ -42,10 +43,23 @@ async function run() {
             res.send(reviews);
         });
 
-        // add review api
+        // add review post api
         app.post('/review', async (req, res) => {
             const newReview = req.body;
             const result = await reviewsCollection.insertOne(newReview);
+            res.send(result);
+        });
+
+        // user api
+        app.put('/user/:email', async (req, res) => {
+            const email = req.params.email;
+            const user = req.body;
+            const filter = { email: email };
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: user,
+            };
+            const result = await userCollection.updateOne(filter, updateDoc, options);
             res.send(result);
         })
     }
