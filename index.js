@@ -50,7 +50,7 @@ async function run() {
             res.send(result);
         });
 
-        // user api
+        // user put api
         app.put('/user/:email', async (req, res) => {
             const email = req.params.email;
             const user = req.body;
@@ -61,7 +61,15 @@ async function run() {
             };
             const result = await userCollection.updateOne(filter, updateDoc, options);
             res.send(result);
-        })
+        });
+
+        // get sigle user api
+        app.get('/user', async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email };
+            const users = await userCollection.find(query).toArray();
+            res.send(users);
+        });
     }
     finally {
 
