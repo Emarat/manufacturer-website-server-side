@@ -19,6 +19,7 @@ async function run() {
         const toolsCollection = client.db('emarat_manufacturer').collection('tools');
         const reviewsCollection = client.db('emarat_manufacturer').collection('reviews');
         const userCollection = client.db('emarat_manufacturer').collection('users');
+        const orderCollection = client.db('emarat_manufacturer').collection('orders');
 
         // tools get api
         app.get('/tools', async (req, res) => {
@@ -47,6 +48,13 @@ async function run() {
         app.post('/review', async (req, res) => {
             const newReview = req.body;
             const result = await reviewsCollection.insertOne(newReview);
+            res.send(result);
+        });
+
+        // order post api 
+        app.post('/order', async (req, res) => {
+            const order = req.body;
+            const result = await orderCollection.insertOne(order);
             res.send(result);
         });
 
