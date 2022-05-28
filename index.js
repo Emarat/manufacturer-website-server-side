@@ -116,6 +116,12 @@ async function run() {
             res.send(result);
         });
 
+        // get all user api 
+        app.get('/user', async (req, res) => {
+            const users = await userCollection.find().toArray();
+            res.send(users);
+        });
+
 
         // user put api
         app.put('/user/:email', async (req, res) => {
