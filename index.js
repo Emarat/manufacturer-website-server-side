@@ -4,6 +4,7 @@ const cors = require('cors');
 const app = express();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const { ObjectID } = require('bson');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const port = process.env.PORT || 5000;
 
 app.use(cors());
@@ -20,6 +21,7 @@ async function run() {
         const reviewsCollection = client.db('emarat_manufacturer').collection('reviews');
         const userCollection = client.db('emarat_manufacturer').collection('users');
         const orderCollection = client.db('emarat_manufacturer').collection('orders');
+        const paymentCollection = client.db('emarat_manufacturer').collection('payments');
 
         // tools get api
         app.get('/tools', async (req, res) => {
@@ -64,7 +66,56 @@ async function run() {
             const query = { email: email };
             const orders = await orderCollection.find(query).toArray();
             res.send(orders);
-        })
+        });
+
+        // single order get api 
+        app.get('/order/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const order = await orderCollection.findOne(query);
+            res.send(order);
+        });
+
+        // payment intent api 
+        app.post('/create-payment-intent', async (req, res) => {
+            const orders = req.body;
+            if (orders.price) {
+                const price = orders.price;
+                const amount = price * 100;
+                const paymentIntent = await stripe.paymentIntents.create({
+                    amount: amount,
+                    currency: 'usd',
+                    payment_method_types: ['card']
+                });
+                res.send({ clientSecret: paymentIntent.client_secret })
+            }
+        });
+
+        // updated order api 
+        app.patch('/order/:id', async (req, res) => {
+            const id = req.params.id;
+            const payment = req.body;
+            const filter = { _id: ObjectId(id) };
+            const updatedDoc = {
+                $set: {
+                    paid: true,
+                    transactionId: payment.transactionId
+                }
+            }
+
+            const result = await paymentCollection.insertOne(payment);
+            const updatedOrder = await orderCollection.updateOne(filter, updatedDoc);
+            res.send(updatedOrder);
+        });
+
+        // cancel order api 
+        app.delete('/order/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await orderCollection.deleteOne(query);
+            res.send(result);
+        });
+
 
         // user put api
         app.put('/user/:email', async (req, res) => {
@@ -86,6 +137,9 @@ async function run() {
             const users = await userCollection.find(query).toArray();
             res.send(users);
         });
+
+
+
     }
     finally {
 
