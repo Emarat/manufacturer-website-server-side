@@ -115,6 +115,14 @@ async function run() {
             res.send(order);
         });
 
+        // manage order get api 
+        app.get('/orders', async (req, res) => {
+            const query = {};
+            const cursor = orderCollection.find(query);
+            const orders = await cursor.toArray();
+            res.send(orders);
+        });
+
         // payment intent api 
         app.post('/create-payment-intent', async (req, res) => {
             const orders = req.body;
@@ -192,6 +200,19 @@ async function run() {
             else {
                 res.status(403).send({ message: 'forbidden' });
             }
+
+        });
+
+        // order shipped api 
+        app.put('/orders/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const updateDoc = {
+                $set: { status: 'shipped' },
+            };
+            const result = await orderCollection.updateOne(filter, updateDoc);
+            res.send(result);
+
 
         });
 
